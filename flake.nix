@@ -73,7 +73,7 @@
           cat <<'EOF' > "$TF_CLI_CONFIG_FILE"
           provider_installation {
             dev_overrides {
-                "hashicorp.com/ocp/ocp" = "$GOBIN"
+                "hashicorp.com/Vivicta-SC/ocp" = "$GOBIN"
             }
             direct {}
           }

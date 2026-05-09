@@ -25,7 +25,7 @@ View example Terraform configuration [Example](./example)
 terraform {
   required_providers {
     ocp = {
-      source = "hashicorp.com/ocp/ocp"
+      source = "hashicorp.com/Vivicta-SC/ocp"
     }
   }
 }

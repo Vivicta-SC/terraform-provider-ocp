@@ -20,11 +20,11 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "hashicorp.com/ocp/ocp",
+		Address: "hashicorp.com/Vivicta-SC/ocp",
 		Debug:   debug,
 	}
 
-	err := providerserver.Serve(context.Background(), provider.New("0.1.0"), opts)
+	err := providerserver.Serve(context.Background(), provider.New("0.1.1"), opts)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
