@@ -1,0 +1,18 @@
+__tmp
+
+.vscode
+!.vscode/example.settings.json
+!.vscode/example.launch.json
+
+.devshell
+.direnv
+
+.terraformrc
+
+.env
+
+*.tfstate
+*.tfstate.backup
+
+# Added by goreleaser init:
+dist/
