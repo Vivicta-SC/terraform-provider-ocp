@@ -43,6 +43,7 @@ func (r *staasGroupResource) Configure(_ context.Context, req resource.Configure
 }
 func (r *staasGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Groups individual StaaS volumes together so they share export policy, data protection policy, tier & QOS",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

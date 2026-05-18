@@ -6,7 +6,7 @@ This repository contains the Terraform provider for Vivicta OneCloud Platinum (O
 
 ## Documantation
 Documentation is available at TODO: link  
-View example Terraform configuration [Example](./example)
+View example Terraform configuration [Example](./examples)
 
 ## Requirements
 - [Go](https://go.dev/doc/install) 1.26+ (when bulding)
@@ -53,8 +53,8 @@ export OCP_TOKEN="your_token"
 ## Resource overview
 - `ocp_project`
 - `ocp_separation_pod`
-- `ocp_volume`
-- `ocp_volume_group`
+- `ocp_staas_volume`
+- `ocp_staas_group`
 - `ocp_vm`
 
 ## Contributing

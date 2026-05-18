@@ -45,7 +45,8 @@ func (p *ocpProvider) Metadata(ctx context.Context, req provider.MetadataRequest
 
 func (p *ocpProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Vivicta OneCloud Platinum (OCP) Terraform Provider",
+		Description: "Vivicta OneCloud Platinum (OCP) Terraform Provider" +
+			"\nFor detailed information, see the white papers available on the portal website.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				Optional: true,

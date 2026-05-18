@@ -42,6 +42,8 @@ func (r *separationPodResource) Configure(ctx context.Context, req resource.Conf
 }
 func (r *separationPodResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Container for separating customer resources used by projects." +
+			"\nDefines which infrastructure and platform resources may be used together within projects assigned to it.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

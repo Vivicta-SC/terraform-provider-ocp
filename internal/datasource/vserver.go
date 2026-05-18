@@ -33,6 +33,7 @@ func (d *vserverDataSource) Configure(_ context.Context, req datasource.Configur
 }
 func (d *vserverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Represents OCP managed NetApp SVM",
 		Attributes: map[string]schema.Attribute{
 			"id":          schema.StringAttribute{Optional: true, Computed: true},
 			"customer_id": schema.StringAttribute{Optional: true, Computed: true},

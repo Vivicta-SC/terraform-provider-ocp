@@ -3,8 +3,8 @@ all: tools headers fmt docs
 
 .PHONY: tools
 tools:
-	go install github.com/hashicorp/copywrite
-	go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+	go install github.com/hashicorp/copywrite@latest
+	go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
 
 .PHONY: headers
 headers:

@@ -31,14 +31,18 @@ func (d *customerDataSource) Configure(_ context.Context, req datasource.Configu
 }
 func (d *customerDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Represents a customer (tenant) of OCP platform." +
-			" Serves as a root aggregation point for other resources. Corresponds to `CustomerNode` in GraphQL",
+		Description: "Represents customer/tenant of OCP platform." +
+			"\nServes as a root aggregation point for most resources belonging to customer, notably:" +
+			" `Domain`, `SeparationPod`, `Project`, `DataProtectionPolicy`, `Network`, `ProvisioningTemplate`," +
+			" `SchedulePolicy`, `Tag`, `Template`, `VirtualHost` & `Workflow`." +
+			"\nHouses configurations for billing, Service NOW resouse lifecycle management, Virtual Host" +
+			"deployment & antivirus.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{Optional: true, Computed: true},
 			"prefix": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Consisnt of 3+ characters, this is unique identifier",
+				Description: "Natural unique customer identificator",
 			},
 			"name": schema.StringAttribute{Optional: true, Computed: true},
 		},

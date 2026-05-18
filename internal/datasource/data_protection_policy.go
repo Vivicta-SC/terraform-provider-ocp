@@ -33,13 +33,18 @@ func (d *dppDataSource) Configure(_ context.Context, req datasource.ConfigureReq
 }
 func (d *dppDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Represents data protection configuration for primary snapshots, secondary backup & archive." +
-			"Applicable to virtual machines and volumes. Corresponds to `DataProtectionPolicyNode` in GraphQL",
+		Description: "Represents data protection configuration. Assignable to virtual machines and volumes;" +
+			" describes frequency and retention of primary snapshots, secondary backup & archive.",
 		Attributes: map[string]schema.Attribute{
-			"id":                     schema.StringAttribute{Optional: true, Computed: true},
-			"customer_id":            schema.StringAttribute{Optional: true, Computed: true},
-			"note":                   schema.StringAttribute{Optional: true, Computed: true},
-			"is_immutable":           schema.BoolAttribute{Optional: true, Computed: true},
+			"id":          schema.StringAttribute{Optional: true, Computed: true},
+			"customer_id": schema.StringAttribute{Optional: true, Computed: true},
+			"note":        schema.StringAttribute{Optional: true, Computed: true},
+			"is_immutable": schema.BoolAttribute{
+				Description: "Primary & backup volume snapshot created with immutable data protection policy cannot" +
+					" be deleted by _anyone_ before it's expiry time.",
+				Optional: true,
+				Computed: true,
+			},
 			"primary_snapshot_count": schema.Int32Attribute{Optional: true, Computed: true},
 			"secondary_backup_count": schema.Int32Attribute{Optional: true, Computed: true},
 			"archive_count":          schema.Int32Attribute{Optional: true, Computed: true},

@@ -41,6 +41,7 @@ func (r *staasVolumeResource) Configure(_ context.Context, req resource.Configur
 }
 func (r *staasVolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "StaaS volume allows creation of NAS storage.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,
@@ -63,7 +64,7 @@ func (r *staasVolumeResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"primary_retention_deletion_days": schema.Int32Attribute{
 				Optional: true,
 				Computed: true,
-				Default:  int32default.StaticInt32(2),
+				Default:  int32default.StaticInt32(0),
 			},
 		},
 	}

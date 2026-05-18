@@ -33,9 +33,15 @@ func (d *tierDataSource) Configure(ctx context.Context, req datasource.Configure
 }
 func (d *tierDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Represents a platform's service level. Assign to volume or virtual machine" +
+			" based on desired performance and availability requirements.",
 		Attributes: map[string]schema.Attribute{
-			"id":   schema.StringAttribute{Optional: true, Computed: true},
-			"name": schema.StringAttribute{Optional: true, Computed: true},
+			"id": schema.StringAttribute{Optional: true, Computed: true},
+			"name": schema.StringAttribute{
+				Description: "Available tier names: `Platinum`, `Gold`, `Silver` & `Bronze`",
+				Optional:    true,
+				Computed:    true,
+			},
 			"solution": schema.StringAttribute{
 				Optional:   true,
 				Computed:   true,
