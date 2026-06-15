@@ -38,7 +38,7 @@ func nicsAttribute() schema.ListNestedAttribute {
 					Required:      true,
 					PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				},
-				"label": schema.StringAttribute{ // TODO: this might become natural primary key?
+				"label": schema.StringAttribute{
 					Computed:      true,
 					PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 				},
@@ -67,13 +67,13 @@ func nicsAttribute() schema.ListNestedAttribute {
 					Computed:      true,
 					PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()},
 				},
-				"auto_assign_ip_wo": schema.BoolAttribute{ // TODO: write only?
+				"auto_assign_ip": schema.BoolAttribute{
 					Optional:      true,
 					Computed:      true,
 					Default:       booldefault.StaticBool(true),
 					PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()},
 				},
-				"use_as_default_gateway_wo": schema.BoolAttribute{ // TODO: write only?
+				"use_as_default_gateway": schema.BoolAttribute{
 					Optional:      true,
 					Computed:      true,
 					Default:       booldefault.StaticBool(false),
@@ -93,14 +93,14 @@ var ipv4ObjectType = types.ObjectType{
 
 var nicObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"id":                        types.StringType,
-		"network_id":                types.StringType,
-		"default_gateway_ip":        types.StringType,
-		"label":                     types.StringType,
-		"ipv4":                      types.ListType{ElemType: ipv4ObjectType},
-		"ipv6":                      types.SetType{ElemType: types.StringType},
-		"auto_assign_ip_wo":         types.BoolType,
-		"use_as_default_gateway_wo": types.BoolType,
+		"id":                     types.StringType,
+		"network_id":             types.StringType,
+		"default_gateway_ip":     types.StringType,
+		"label":                  types.StringType,
+		"ipv4":                   types.ListType{ElemType: ipv4ObjectType},
+		"ipv6":                   types.SetType{ElemType: types.StringType},
+		"auto_assign_ip":         types.BoolType,
+		"use_as_default_gateway": types.BoolType,
 	},
 }
 
@@ -116,8 +116,8 @@ type nicModel struct {
 	Label               types.String `tfsdk:"label"`
 	IPv4                types.List   `tfsdk:"ipv4"`
 	IPv6                types.Set    `tfsdk:"ipv6"`
-	AutoAssignIp        types.Bool   `tfsdk:"auto_assign_ip_wo"`
-	UseAsDefaultGateway types.Bool   `tfsdk:"use_as_default_gateway_wo"`
+	AutoAssignIp        types.Bool   `tfsdk:"auto_assign_ip"`
+	UseAsDefaultGateway types.Bool   `tfsdk:"use_as_default_gateway"`
 }
 
 func (nic *nicModel) intoModel(ctx context.Context, data *client.NICGQL, data_ips []*client.VMIPGQL) diag.Diagnostics {

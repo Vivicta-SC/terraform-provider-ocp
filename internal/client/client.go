@@ -649,6 +649,31 @@ mutation delete($id: GlobalID!) {
 }
 `
 
+type VserverGQL struct {
+	NodeGQL
+
+	Name           string
+	Customer       NodeGQL
+	StorageCluster struct{ StorageType string }
+	Region         string
+	SolutionType   string
+}
+
+const VserverQuery = `
+fragment VserverFrag on VserverNode {
+  id
+  name
+  customer { id }
+  storageCluster { storageType }
+  region
+  solutionType
+}
+
+query get($id: GlobalID, $filters: VserverFilter, $required: Boolean! = true) {
+  data: vserver(id: $id, filters: $filters, required: $required) { ...VserverFrag }
+}
+`
+
 type StaasGroupGQL struct {
 	NodeGQL
 
@@ -664,9 +689,22 @@ type StaasGroupGQL struct {
 const StaasVolumeQuery = `
 fragment StaasVolumeFrag on VolumeNode {
   id
-  staasGroup { id }
   name
+  note
   protocol
+  project { id }
+  dataProtectionPolicy { id }
+  tier { id }
+  vserver { id }
+  visibility {
+    __typename
+    ... on IpAddressNode { id }
+    ... on SubnetNode { id }
+    ... on iScsiVisibility {
+      network { id }
+      virtualHost { id }
+    }
+  }
 }
 
 query get($id: GlobalID, $filters: VolumeFilter, $required: Boolean! = true) {
@@ -719,10 +757,18 @@ mutation delete($id: GlobalID!, $retention: Int) {
 
 type StaasVolumeGQL struct {
 	NodeGQL
-	StaasGroup NodeGQL
-	Name       string
-	Note       string
-	Protocal   string
+	Name                 string
+	Note                 string
+	Protocol             string
+	Project              NodeGQL
+	DataProtectionPolicy NodeGQL
+	Tier                 NodeGQL
+	Vserver              NodeGQL
+
+	Visibility []struct {
+		Typename string `json:"__typename"`
+		ID       string
+	}
 }
 
 const IPQuery = `

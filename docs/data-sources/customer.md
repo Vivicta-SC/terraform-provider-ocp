@@ -3,16 +3,12 @@
 page_title: "ocp_customer Data Source - terraform-provider-ocp"
 subcategory: ""
 description: |-
-  Represents customer/tenant of OCP platform.
-  Serves as a root aggregation point for most resources belonging to customer, notably: Domain, SeparationPod, Project, DataProtectionPolicy, Network, ProvisioningTemplate, SchedulePolicy, Tag, Template, VirtualHost & Workflow.
-  Houses configurations for billing, Service NOW resouse lifecycle management, Virtual Hostdeployment & antivirus.
+  Represents customer/tenant of OCP platform. Serves as a root aggregation point for most resources belonging to customer, notably: Domain, SeparationPod, Project, DataProtectionPolicy, Network, ProvisioningTemplate, SchedulePolicy, Tag, Template, VirtualHost & Workflow. Houses configurations for billing, Service NOW resouse lifecycle management, Virtual Host deployment & antivirus.
 ---
 
 # ocp_customer (Data Source)
 
-Represents customer/tenant of OCP platform.
-Serves as a root aggregation point for most resources belonging to customer, notably: `Domain`, `SeparationPod`, `Project`, `DataProtectionPolicy`, `Network`, `ProvisioningTemplate`, `SchedulePolicy`, `Tag`, `Template`, `VirtualHost` & `Workflow`.
-Houses configurations for billing, Service NOW resouse lifecycle management, Virtual Hostdeployment & antivirus.
+Represents customer/tenant of OCP platform. Serves as a root aggregation point for most resources belonging to customer, notably: `Domain`, `SeparationPod`, `Project`, `DataProtectionPolicy`, `Network`, `ProvisioningTemplate`, `SchedulePolicy`, `Tag`, `Template`, `VirtualHost` & `Workflow`. Houses configurations for billing, Service NOW resouse lifecycle management, Virtual Host deployment & antivirus.
 
 
 

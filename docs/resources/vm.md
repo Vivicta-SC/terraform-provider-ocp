@@ -3,12 +3,12 @@
 page_title: "ocp_vm Resource - terraform-provider-ocp"
 subcategory: ""
 description: |-
-  
+  Use this resource to manage OCP VirtualHost.
 ---
 
 # ocp_vm (Resource)
 
-
+Use this resource to manage OCP VirtualHost.
 
 
 
@@ -25,47 +25,28 @@ description: |-
 - `memory_size_gb` (Number)
 - `note` (String)
 - `project_id` (String)
-- `region` (String)
+- `region` (String) Allowed values: `SWEDEN`, `NORWAY` & `FINLAND`
 - `template_id` (String)
 - `tier_id` (String)
 
 ### Optional
 
-- `antivirus` (String)
-- `cluster_type` (String)
-- `config` (Attributes) (see [below for nested schema](#nestedatt--config))
+- `allow_restart` (Boolean) Allow OCP restart of VM during resize (lowering cpu/memory)
+- `antivirus` (String) Allowed values: `MCAFEE`, `DEFENDER`, `SYMANTEC`, `FSECURE`, `CORTEX` & `NONE`. Defaults to `NONE`
+- `await_deletion_task` (Boolean) Set to await VM deletion task, otherwise VM will be considered deleted immediatelly. Only use this, if potential new VM does not use the same resources - IPs, hostname, etc.
+- `cluster_type` (String) Allowed values: `PRIMARY` & `SECONDARY`. Defaults to `PRIMARY`
 - `cores_per_socket` (Number)
 - `disks` (Attributes List) (see [below for nested schema](#nestedatt--disks))
 - `join_to_domain` (Boolean)
 - `nics` (Attributes List) (see [below for nested schema](#nestedatt--nics))
-- `os_disk_size_gb_wo` (Number)
+- `os_disk_size_gb` (Number)
 - `tag_ids` (Set of String)
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `creation_task_id` (String)
 - `id` (String) The ID of this resource.
-
-<a id="nestedatt--config"></a>
-### Nested Schema for `config`
-
-Optional:
-
-- `allow_restart` (Boolean) Allow OCP restart of VM during resize (lowering cpu/memory)
-- `await_deletion_task` (Boolean) Set to await VM deletion task, otherwise VM will be considered deleted immediatelly. Only use this, if potential new VM does not use the same resources - IPs, hostname, etc.
-- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--config--timeouts))
-
-<a id="nestedatt--config--timeouts"></a>
-### Nested Schema for `config.timeouts`
-
-Optional:
-
-- `create` (String)
-- `delete` (String)
-- `read` (String)
-- `update` (String)
-
-
 
 <a id="nestedatt--disks"></a>
 ### Nested Schema for `disks`
@@ -93,9 +74,9 @@ Required:
 
 Optional:
 
-- `auto_assign_ip_wo` (Boolean)
+- `auto_assign_ip` (Boolean)
 - `ipv4` (Attributes List) (see [below for nested schema](#nestedatt--nics--ipv4))
-- `use_as_default_gateway_wo` (Boolean)
+- `use_as_default_gateway` (Boolean)
 
 Read-Only:
 
@@ -114,3 +95,15 @@ Optional:
 Read-Only:
 
 - `id` (String)
+
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String)
+- `delete` (String)
+- `read` (String)
+- `update` (String)

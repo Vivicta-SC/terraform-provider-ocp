@@ -12,7 +12,6 @@ import (
 	"github.com/Vivicta-SC/terraform-provider-ocp/internal/utils"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -90,18 +89,6 @@ func (r *staasGroupResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 		},
 	}
-}
-
-var nfsExportObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"ip_id":     types.StringType,
-		"subnet_id": types.StringType,
-	},
-}
-
-type nfsExportModel struct {
-	IPID     types.String `tfsdk:"ip_id"`
-	SubnetID types.String `tfsdk:"subnet_id"`
 }
 
 type staasGroupResourceModel struct {

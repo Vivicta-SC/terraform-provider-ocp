@@ -19,7 +19,7 @@ description: |-
 
 - `customer_id` (String)
 - `name` (String)
-- `region` (String)
+- `region` (String) Allowed values: `SWEDEN`, `NORWAY` & `FINLAND`
 
 ### Read-Only
 

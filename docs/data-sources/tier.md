@@ -18,7 +18,7 @@ Represents a platform's service level. Assign to volume or virtual machine based
 ### Optional
 
 - `name` (String) Available tier names: `Platinum`, `Gold`, `Silver` & `Bronze`
-- `solution` (String)
+- `solution` (String) Allowed values: `OCP`, `TDL` & `CAAS`. Defaults to `OCP`.
 
 ### Read-Only
 

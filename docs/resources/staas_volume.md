@@ -17,15 +17,40 @@ StaaS volume allows creation of NAS storage.
 
 ### Required
 
+- `data_protection_policy_id` (String)
+- `project_id` (String)
+- `protocol` (String) Allowed values: `ISCSI` & `NFS`.
 - `size_gb` (Number)
-- `staas_group_id` (String)
+- `tier_id` (String)
+- `vserver_id` (String) Vserver ID (`ocp_vserver`), Volume will be created in. Vserver needs to be of `STAAS` type and  it's StorageClusterType must be either `PRIMARY` or `DR_BACKUP` (hosting in secodary DC).
 
 ### Optional
 
+- `deletion_primary_retention_days` (Number) Retention for Volume in primary site after deletion. Volumes deleted with retention will block project removal
+- `nfs_exports` (Attributes Set) (see [below for nested schema](#nestedatt--nfs_exports))
 - `note` (String)
-- `primary_retention_deletion_days` (Number)
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `protocol` (String)
+- `name` (String)
+
+<a id="nestedatt--nfs_exports"></a>
+### Nested Schema for `nfs_exports`
+
+Optional:
+
+- `ip_id` (String)
+- `subnet_id` (String)
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String)
+- `delete` (String)
+- `read` (String)
+- `update` (String)

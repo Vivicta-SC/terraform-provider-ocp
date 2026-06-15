@@ -38,9 +38,10 @@ func (d *networkDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 			"name":        schema.StringAttribute{Optional: true, Computed: true},
 			"customer_id": schema.StringAttribute{Optional: true, Computed: true},
 			"region": schema.StringAttribute{
-				Optional:   true,
-				Computed:   true,
-				Validators: []validator.String{stringvalidator.OneOf("SWEDEN", "NORWAY", "FINLAND")},
+				Description: "Allowed values: `SWEDEN`, `NORWAY` & `FINLAND`",
+				Optional:    true,
+				Computed:    true,
+				Validators:  []validator.String{stringvalidator.OneOf("SWEDEN", "NORWAY", "FINLAND")},
 			},
 			"primary_subnet_id": schema.StringAttribute{Computed: true},
 		},

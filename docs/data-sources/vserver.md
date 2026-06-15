@@ -17,11 +17,11 @@ Represents OCP managed NetApp SVM
 
 ### Optional
 
-- `cluster_type` (String) Defaults to `PRIMARY`
+- `cluster_type` (String) Allowed values: `PRIMARY` & `DR_BACKUP`. Defaults to `PRIMARY`
 - `customer_id` (String)
 - `name` (String)
-- `region` (String)
-- `solution` (String) Defaults to `OCP`
+- `region` (String) Allowed values: `SWEDEN`, `NORWAY` & `FINLAND`
+- `solution` (String) Allowed values: `OCP, `TDL` & `CAAS`. Defaults to `OCP`.
 
 ### Read-Only
 

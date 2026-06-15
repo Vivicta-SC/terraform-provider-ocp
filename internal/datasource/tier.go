@@ -43,9 +43,10 @@ func (d *tierDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				Computed:    true,
 			},
 			"solution": schema.StringAttribute{
-				Optional:   true,
-				Computed:   true,
-				Validators: []validator.String{stringvalidator.OneOf("OCP", "TDL", "CAAS")},
+				Description: "Allowed values: `OCP`, `TDL` & `CAAS`. Defaults to `OCP`.",
+				Optional:    true,
+				Computed:    true,
+				Validators:  []validator.String{stringvalidator.OneOf("OCP", "TDL", "CAAS")},
 			},
 		},
 	}

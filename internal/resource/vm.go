@@ -48,6 +48,7 @@ func (r *vmResource) Configure(_ context.Context, req resource.ConfigureRequest,
 }
 func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Use this resource to manage OCP VirtualHost.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,
@@ -88,6 +89,7 @@ func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp 
 				Required: true, // TODO: why is this required in OCP? (cant even empty string)
 			},
 			"region": schema.StringAttribute{
+				Description:   "Allowed values: `SWEDEN`, `NORWAY` & `FINLAND`",
 				Required:      true,
 				Validators:    []validator.String{stringvalidator.OneOf("SWEDEN", "NORWAY", "FINLAND")},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
@@ -103,11 +105,12 @@ func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp 
 			"memory_size_gb": schema.Int32Attribute{
 				Required: true,
 			},
-			"os_disk_size_gb_wo": schema.Int32Attribute{
+			"os_disk_size_gb": schema.Int32Attribute{
 				Optional:      true,
 				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace(), int32planmodifier.UseStateForUnknown()},
 			},
 			"antivirus": schema.StringAttribute{
+				Description:   "Allowed values: `MCAFEE`, `DEFENDER`, `SYMANTEC`, `FSECURE`, `CORTEX` & `NONE`. Defaults to `NONE`",
 				Optional:      true,
 				Computed:      true,
 				Default:       stringdefault.StaticString("NONE"),
@@ -121,6 +124,7 @@ func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp 
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
 			},
 			"cluster_type": schema.StringAttribute{
+				Description:   "Allowed values: `PRIMARY` & `SECONDARY`. Defaults to `PRIMARY`",
 				Optional:      true,
 				Computed:      true,
 				Default:       stringdefault.StaticString("PRIMARY"),
@@ -141,12 +145,25 @@ func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp 
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
-			"config": vmConfigAttribute(ctx),
+			"await_deletion_task": schema.BoolAttribute{
+				Optional: true,
+				Computed: true,
+				Default:  booldefault.StaticBool(true),
+				Description: "Set to await VM deletion task, otherwise VM will be considered deleted immediatelly." +
+					" Only use this, if potential new VM does not use the same resources - IPs, hostname, etc.",
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+			},
+			"allow_restart": schema.BoolAttribute{
+				Optional:      true,
+				Computed:      true,
+				Default:       booldefault.StaticBool(false),
+				Description:   "Allow OCP restart of VM during resize (lowering cpu/memory)",
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+			},
+			"timeouts": timeoutAttribute(ctx, "20m", "15s", "20m", "20m"),
 		},
 	}
 }
-
-// TODO: https://developer.hashicorp.com/terraform/plugin/framework/resources/private-state
 
 type vmResourceModel struct {
 	ID                     types.String `tfsdk:"id"`
@@ -165,14 +182,16 @@ type vmResourceModel struct {
 	Antivirus              types.String `tfsdk:"antivirus"`
 	ClusterType            types.String `tfsdk:"cluster_type"`
 	JoinToDomain           types.Bool   `tfsdk:"join_to_domain"`
-	OSDiskSizeGB           types.Int32  `tfsdk:"os_disk_size_gb_wo"`
+	OSDiskSizeGB           types.Int32  `tfsdk:"os_disk_size_gb"`
 
 	Tags  types.Set  `tfsdk:"tag_ids"`
 	Disks types.List `tfsdk:"disks"`
 	NICS  types.List `tfsdk:"nics"`
 
-	CreationTaskID types.String  `tfsdk:"creation_task_id"`
-	Config         vmConfigModel `tfsdk:"config"`
+	CreationTaskID    types.String  `tfsdk:"creation_task_id"`
+	AwaitDeletionTask types.Bool    `tfsdk:"await_deletion_task"`
+	AllowRestart      types.Bool    `tfsdk:"allow_restart"`
+	Timeouts          timeoutsModel `tfsdk:"timeouts"`
 }
 
 func (vm *vmResourceModel) intoModelWithoutCreationUnknown(_ context.Context, data *client.VMGQL) diag.Diagnostics {
@@ -216,7 +235,7 @@ func (r *vmResource) Create(ctx context.Context, req resource.CreateRequest, res
 	var data vmResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, _diags := data.Config.Timeouts.Create.ValueGoDuration()
+	createTimeout, _diags := data.Timeouts.Create.ValueGoDuration()
 	resp.Diagnostics.Append(_diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -344,10 +363,16 @@ func (r *vmResource) Create(ctx context.Context, req resource.CreateRequest, res
 func (r *vmResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data vmResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	timeout, _diags := data.Timeouts.Read.ValueGoDuration()
+	resp.Diagnostics.Append(_diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	var res struct{ Data client.VMGQL }
 	if err := r.client.Do(
 		ctx,
@@ -376,7 +401,7 @@ func (r *vmResource) Update(ctx context.Context, req resource.UpdateRequest, res
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-	timeout, _diags := plan.Config.Timeouts.Update.ValueGoDuration()
+	timeout, _diags := plan.Timeouts.Update.ValueGoDuration()
 	resp.Diagnostics.Append(_diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -392,7 +417,7 @@ func (r *vmResource) Update(ctx context.Context, req resource.UpdateRequest, res
 		needsRefresh = true
 		input := map[string]interface{}{
 			"virtualHost":  plan.ID.ValueString(),
-			"allowRestart": plan.Config.AllowRestart.ValueBool(),
+			"allowRestart": plan.AllowRestart.ValueBool(),
 		}
 		if cpuChanged {
 			input["cpuCount"] = plan.CpuCount.ValueInt32()
@@ -465,7 +490,7 @@ func (r *vmResource) Delete(ctx context.Context, req resource.DeleteRequest, res
 	var data vmResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	deleteTimeout, _diags := data.Config.Timeouts.Delete.ValueGoDuration()
+	deleteTimeout, _diags := data.Timeouts.Delete.ValueGoDuration()
 	resp.Diagnostics.Append(_diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -493,7 +518,7 @@ func (r *vmResource) Delete(ctx context.Context, req resource.DeleteRequest, res
 		return
 	}
 
-	if !data.Config.AwaitDeletionTask.ValueBool() {
+	if !data.AwaitDeletionTask.ValueBool() {
 		return
 	}
 

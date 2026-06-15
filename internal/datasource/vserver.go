@@ -39,21 +39,22 @@ func (d *vserverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 			"customer_id": schema.StringAttribute{Optional: true, Computed: true},
 			"name":        schema.StringAttribute{Optional: true, Computed: true},
 			"cluster_type": schema.StringAttribute{
-				Description: "Defaults to `PRIMARY`",
+				Description: "Allowed values: `PRIMARY` & `DR_BACKUP`. Defaults to `PRIMARY`",
 				Optional:    true,
 				Computed:    true,
 				Validators:  []validator.String{stringvalidator.OneOf("PRIMARY", "DR_BACKUP")},
 			},
 			"solution": schema.StringAttribute{
-				Description: "Defaults to `OCP`",
+				Description: "Allowed values: `OCP, `TDL` & `CAAS`. Defaults to `OCP`.",
 				Optional:    true,
 				Computed:    true,
 				Validators:  []validator.String{stringvalidator.OneOf("OCP", "TDL", "CAAS")},
 			},
 			"region": schema.StringAttribute{
-				Optional:   true,
-				Computed:   true,
-				Validators: []validator.String{stringvalidator.OneOf("SWEDEN", "NORWAY", "FINLAND")},
+				Description: "Allowed values: `SWEDEN`, `NORWAY` & `FINLAND`",
+				Optional:    true,
+				Computed:    true,
+				Validators:  []validator.String{stringvalidator.OneOf("SWEDEN", "NORWAY", "FINLAND")},
 			},
 		},
 	}
@@ -67,19 +68,6 @@ type vserverDataSourceModel struct {
 	Solution   types.String `tfsdk:"solution"`
 	Region     types.String `tfsdk:"region"`
 }
-
-const vserverQuery = `
-query get($id: GlobalID, $filters: VserverFilter, $required: Boolean! = true) {
-  data: vserver(id: $id, filters: $filters, required: $required) {
-    id
-    name
-	customer { id }
-    storageCluster { storageType }
-    region
-    solutionType
-  }
-}
-`
 
 func (d *vserverDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data vserverDataSourceModel
@@ -120,19 +108,10 @@ func (d *vserverDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		}
 	}
 
-	var res struct {
-		Data struct {
-			client.NodeGQL
-			Name           string
-			Customer       client.NodeGQL
-			StorageCluster struct{ storageType string }
-			Region         string
-			SolutionType   string
-		}
-	}
+	var res struct{ Data client.VserverGQL }
 	if err := d.client.Do(
 		ctx,
-		client.GQLRequest{Query: vserverQuery, Variables: map[string]interface{}{"filters": filters}, Operation: "get"},
+		client.GQLRequest{Query: client.VserverQuery, Variables: map[string]interface{}{"filters": filters}, Operation: "get"},
 		&res,
 		&client.DoOpts{Diags: &resp.Diagnostics},
 	); err != nil {
@@ -143,7 +122,7 @@ func (d *vserverDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	data.ID = types.StringValue(res.Data.ID)
 	data.Name = types.StringValue(res.Data.Name)
 	data.CustomerID = types.StringValue(res.Data.Customer.ID)
-	data.CluterType = types.StringValue(res.Data.StorageCluster.storageType)
+	data.CluterType = types.StringValue(res.Data.StorageCluster.StorageType)
 	data.Solution = types.StringValue(res.Data.SolutionType)
 	data.Region = types.StringValue(res.Data.Region)
 
