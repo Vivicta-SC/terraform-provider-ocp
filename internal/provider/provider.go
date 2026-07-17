@@ -53,7 +53,7 @@ func (p *ocpProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Description: "OCP GraphQL endpoint. Can be loaded from env `OCP_ENDPOINT`." +
 					" Defaults to latest production endpoint (https://ocp.service.tietoevry.com/v2/graphql)",
 			},
-			"verify_ssl": schema.BoolAttribute{Optional: true, Description: "Skip TLS certificate verification. Defaults to true"},
+			"verify_ssl": schema.BoolAttribute{Optional: true, Description: "Verify TLS certificates. Defaults to true."},
 			"debug": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Enables additional OCP GraphQL usage data (warning, deprecation) - subject to permissions. Default to false",

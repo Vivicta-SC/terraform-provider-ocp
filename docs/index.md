@@ -118,5 +118,4 @@ resource "ocp_staas_volume" "main" {
 
 - `debug` (Boolean) Enables additional OCP GraphQL usage data (warning, deprecation) - subject to permissions. Default to false
 - `endpoint` (String) OCP GraphQL endpoint. Can be loaded from env `OCP_ENDPOINT`. Defaults to latest production endpoint (https://ocp.service.tietoevry.com/v2/graphql)
-- `verify_ssl` (Boolean) Skip TLS certificate verification. Defaults to true
-
+- `verify_ssl` (Boolean) Verify TLS certificates. Defaults to true.
