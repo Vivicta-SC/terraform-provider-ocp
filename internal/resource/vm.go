@@ -33,6 +33,18 @@ import (
 var _ resource.ResourceWithConfigure = &vmResource{}
 var _ resource.ResourceWithImportState = &vmResource{}
 
+// These attributes have no queryable equivalent on the OCP API - they only affect
+// how the VM is created (e.g. "join this VM to a domain during setup") and cannot
+// be read back. They're preserved as-is on ordinary refresh (never touched by
+// intoModel), and seeded with these same defaults on import so that importing a
+// VM whose config matches the common/default case produces a no-op plan instead
+// of an unconditional forced replacement.
+const (
+	defaultJoinToDomain      = false
+	defaultAwaitDeletionTask = true
+	defaultAllowRestart      = false
+)
+
 func NewVMResource() resource.Resource { return &vmResource{} }
 
 type vmResource struct{ client *client.OCPClient }
@@ -107,6 +119,7 @@ func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp 
 			},
 			"os_disk_size_gb": schema.Int32Attribute{
 				Optional:      true,
+				Computed:      true,
 				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace(), int32planmodifier.UseStateForUnknown()},
 			},
 			"antivirus": schema.StringAttribute{
@@ -118,9 +131,10 @@ func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp 
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"join_to_domain": schema.BoolAttribute{
+				Description:   "Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.",
 				Optional:      true,
 				Computed:      true,
-				Default:       booldefault.StaticBool(false),
+				Default:       booldefault.StaticBool(defaultJoinToDomain),
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
 			},
 			"cluster_type": schema.StringAttribute{
@@ -148,16 +162,18 @@ func (r *vmResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp 
 			"await_deletion_task": schema.BoolAttribute{
 				Optional: true,
 				Computed: true,
-				Default:  booldefault.StaticBool(true),
+				Default:  booldefault.StaticBool(defaultAwaitDeletionTask),
 				Description: "Set to await VM deletion task, otherwise VM will be considered deleted immediatelly." +
-					" Only use this, if potential new VM does not use the same resources - IPs, hostname, etc.",
+					" Only use this, if potential new VM does not use the same resources - IPs, hostname, etc." +
+					" Not readable via the OCP API; seeded to its default on import.",
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
 			"allow_restart": schema.BoolAttribute{
-				Optional:      true,
-				Computed:      true,
-				Default:       booldefault.StaticBool(false),
-				Description:   "Allow OCP restart of VM during resize (lowering cpu/memory)",
+				Optional: true,
+				Computed: true,
+				Default:  booldefault.StaticBool(defaultAllowRestart),
+				Description: "Allow OCP restart of VM during resize (lowering cpu/memory)." +
+					" Not readable via the OCP API; seeded to its default on import.",
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
 			"timeouts": timeoutAttribute(ctx, "20m", "15s", "20m", "20m"),
@@ -213,6 +229,13 @@ func (vm *vmResourceModel) intoModelWithoutCreationUnknown(_ context.Context, da
 	vm.ProjectID = types.StringValue(data.Project.ID)
 	vm.TemplateID = types.StringValue(data.Template.ID)
 	vm.TierID = types.StringValue(data.Tier.ID)
+
+	// os_disk_size_gb has no dedicated API field, but the OS disk is one of the
+	// entries in localDiskList (identified by its well-known key). If it's ever
+	// absent from the response, preserve whatever value is already on vm.
+	if osDisk := findOSDisk(data.Disks.GetNodes()); osDisk != nil {
+		vm.OSDiskSizeGB = types.Int32Value(osDisk.SizeGB)
+	}
 
 	return diags
 }
@@ -394,6 +417,15 @@ func (r *vmResource) Read(ctx context.Context, req resource.ReadRequest, resp *r
 
 func (r *vmResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+
+	// join_to_domain, await_deletion_task & allow_restart cannot be recovered from
+	// the API (see the constants' doc comment above). Seed them with their schema
+	// defaults instead of leaving them null, so the subsequent Read - which never
+	// touches them - produces a no-op plan for the common case where the config
+	// also relies on those defaults, rather than an unconditional forced replace.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("join_to_domain"), types.BoolValue(defaultJoinToDomain))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("await_deletion_task"), types.BoolValue(defaultAwaitDeletionTask))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_restart"), types.BoolValue(defaultAllowRestart))...)
 }
 
 func (r *vmResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

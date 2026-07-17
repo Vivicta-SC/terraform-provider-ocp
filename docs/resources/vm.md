@@ -31,13 +31,13 @@ Use this resource to manage OCP VirtualHost.
 
 ### Optional
 
-- `allow_restart` (Boolean) Allow OCP restart of VM during resize (lowering cpu/memory)
+- `allow_restart` (Boolean) Allow OCP restart of VM during resize (lowering cpu/memory). Not readable via the OCP API; seeded to its default on import.
 - `antivirus` (String) Allowed values: `MCAFEE`, `DEFENDER`, `SYMANTEC`, `FSECURE`, `CORTEX` & `NONE`. Defaults to `NONE`
-- `await_deletion_task` (Boolean) Set to await VM deletion task, otherwise VM will be considered deleted immediatelly. Only use this, if potential new VM does not use the same resources - IPs, hostname, etc.
+- `await_deletion_task` (Boolean) Set to await VM deletion task, otherwise VM will be considered deleted immediatelly. Only use this, if potential new VM does not use the same resources - IPs, hostname, etc. Not readable via the OCP API; seeded to its default on import.
 - `cluster_type` (String) Allowed values: `PRIMARY` & `SECONDARY`. Defaults to `PRIMARY`
 - `cores_per_socket` (Number)
 - `disks` (Attributes List) (see [below for nested schema](#nestedatt--disks))
-- `join_to_domain` (Boolean)
+- `join_to_domain` (Boolean) Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.
 - `nics` (Attributes List) (see [below for nested schema](#nestedatt--nics))
 - `os_disk_size_gb` (Number)
 - `tag_ids` (Set of String)
@@ -57,8 +57,8 @@ Required:
 
 Optional:
 
-- `allocation_unit_size` (Number)
-- `win_disk_letter` (String)
+- `allocation_unit_size` (Number) Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.
+- `win_disk_letter` (String) Not readable via the OCP API; unset on import.
 
 Read-Only:
 
@@ -74,9 +74,9 @@ Required:
 
 Optional:
 
-- `auto_assign_ip` (Boolean)
+- `auto_assign_ip` (Boolean) Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.
 - `ipv4` (Attributes List) (see [below for nested schema](#nestedatt--nics--ipv4))
-- `use_as_default_gateway` (Boolean)
+- `use_as_default_gateway` (Boolean) Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.
 
 Read-Only:
 
