@@ -692,6 +692,7 @@ fragment StaasVolumeFrag on VolumeNode {
   name
   note
   protocol
+  sizeGB
   project { id }
   dataProtectionPolicy { id }
   tier { id }
@@ -760,6 +761,7 @@ type StaasVolumeGQL struct {
 	Name                 string
 	Note                 string
 	Protocol             string
+	SizeGB               int32
 	Project              NodeGQL
 	DataProtectionPolicy NodeGQL
 	Tier                 NodeGQL
