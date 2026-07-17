@@ -423,7 +423,7 @@ func (r *vmResource) Update(ctx context.Context, req resource.UpdateRequest, res
 			input["cpuCount"] = plan.CpuCount.ValueInt32()
 		}
 		if coresChanged {
-			input["cpuCount"] = plan.CoresPerSocket.ValueInt32()
+			input["coresPerSocket"] = plan.CoresPerSocket.ValueInt32()
 		}
 		if memoryChanged {
 			input["memorySizeGB"] = plan.MemorySizeGB.ValueInt32()
