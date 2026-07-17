@@ -281,7 +281,7 @@ func (r *vmResource) Create(ctx context.Context, req resource.CreateRequest, res
 			}
 			if len(nic.IPv4.Elements()) > 0 {
 				ipsTF := make([]ipv4Model, 0, len(nic.IPv4.Elements()))
-				resp.Diagnostics.Append(data.Disks.ElementsAs(ctx, &ipsTF, false)...)
+				resp.Diagnostics.Append(nic.IPv4.ElementsAs(ctx, &ipsTF, false)...)
 				ips := make([]string, 0, len(nic.IPv4.Elements()))
 				for _, ip := range ipsTF {
 					ips = append(ips, ip.IP.ValueString())
