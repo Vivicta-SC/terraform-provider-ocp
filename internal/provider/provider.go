@@ -87,8 +87,16 @@ func (p *ocpProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	if !cfg.VerifySsl.IsNull() {
 		verifySsl = cfg.VerifySsl.ValueBool()
 	} else {
-		parsed, err := strconv.ParseBool(os.Getenv("OCP_VERIFY_SSL"))
-		if err != nil {
+		envVal := os.Getenv("OCP_VERIFY_SSL")
+		if envVal != "" {
+			parsed, err := strconv.ParseBool(envVal)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Invalid environment variable value",
+					"Could not parse OCP_VERIFY_SSL as a boolean: "+err.Error(),
+				)
+				return
+			}
 			verifySsl = parsed
 		}
 	}
