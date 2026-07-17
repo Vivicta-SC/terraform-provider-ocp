@@ -19,11 +19,11 @@ func TestProviderConfigure_TLSVerification(t *testing.T) {
 	t.Setenv("OCP_TOKEN", "dummy-token")
 
 	tests := []struct {
-		name          string
-		config        map[string]tftypes.Value
-		envVerifySSL  string
-		expectVerify  bool
-		expectErr     bool
+		name         string
+		config       map[string]tftypes.Value
+		envVerifySSL string
+		expectVerify bool
+		expectErr    bool
 	}{
 		{
 			name: "Default is true when no config and no env is set",
