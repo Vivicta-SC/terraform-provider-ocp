@@ -8,7 +8,6 @@ import (
 )
 
 // InsecureSkipVerify returns true if TLS verification is disabled.
-// ponytail: test helper helper to verify TLS configuration from client.
 func (c *OCPClient) InsecureSkipVerify() bool {
 	if c.http == nil {
 		return false

@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -90,8 +91,8 @@ func (r *staasVolumeResource) Schema(ctx context.Context, _ resource.SchemaReque
 				},
 			},
 			"size_gb": schema.Int32Attribute{
-				Required:    true,
-				Description: "Volume size in GB. Changing this value resizes the volume in-place via `resizeISCSI`/`resizeNAS`.",
+				Required:      true,
+				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 			},
 			"note": schema.StringAttribute{
 				Optional: true,
@@ -149,7 +150,6 @@ func (s *staasVolumeResourceModel) fromGQL(ctx context.Context, data *client.Sta
 	s.TierID = types.StringValue(data.Tier.ID)
 	s.VserverID = types.StringValue(data.Vserver.ID)
 	s.Protocol = types.StringValue(data.Protocol)
-	s.SizeGB = types.Int32Value(data.SizeGB)
 	s.Note = types.StringValue(data.Note)
 
 	if len(data.Visibility) <= 0 {

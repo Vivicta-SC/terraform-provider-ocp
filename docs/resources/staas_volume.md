@@ -20,7 +20,7 @@ StaaS volume allows creation of NAS storage.
 - `data_protection_policy_id` (String)
 - `project_id` (String)
 - `protocol` (String) Allowed values: `ISCSI` & `NFS`.
-- `size_gb` (Number) Volume size in GB. Changing this value resizes the volume in-place via `resizeISCSI`/`resizeNAS`.
+- `size_gb` (Number)
 - `tier_id` (String)
 - `vserver_id` (String) Vserver ID (`ocp_vserver`), Volume will be created in. Vserver needs to be of `STAAS` type and  it's StorageClusterType must be either `PRIMARY` or `DR_BACKUP` (hosting in secodary DC).
 

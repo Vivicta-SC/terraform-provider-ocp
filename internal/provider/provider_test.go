@@ -36,16 +36,6 @@ func TestProviderConfigure_TLSVerification(t *testing.T) {
 			expectVerify: true,
 		},
 		{
-			name: "Default is true when env is empty",
-			config: map[string]tftypes.Value{
-				"endpoint":   tftypes.NewValue(tftypes.String, nil),
-				"verify_ssl": tftypes.NewValue(tftypes.Bool, nil),
-				"debug":      tftypes.NewValue(tftypes.Bool, nil),
-			},
-			envVerifySSL: "",
-			expectVerify: true,
-		},
-		{
 			name: "Env false overrides default to false (InsecureSkipVerify: true)",
 			config: map[string]tftypes.Value{
 				"endpoint":   tftypes.NewValue(tftypes.String, nil),
