@@ -34,7 +34,7 @@
           nixd # TODO: check what is used nowadays
 
           gcc
-          go_1_26
+          go_1_27
           gopls # Go language server
           golangci-lint # Go linter
           delve # go debug tool

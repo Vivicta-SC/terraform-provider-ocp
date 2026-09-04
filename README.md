@@ -5,8 +5,8 @@ This repository contains the Terraform provider for Vivicta OneCloud Platinum (O
 Learn more in [documentation](https://registry.terraform.io/providers/Vivicta-SC/ocp/latest/docs).
 
 ## Requirements
-- [Go](https://go.dev/doc/install) 1.26+ (when bulding)
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) 1.15+
+- [Go](https://go.dev/doc/install) 1.27+ (when bulding)
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) 1.16+
 - Access to Vivicta OCP GraphQL API
 
 ## Usage (Quick Start)
