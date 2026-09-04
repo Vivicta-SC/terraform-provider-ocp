@@ -15,7 +15,7 @@ Learn more in [documentation](https://registry.terraform.io/providers/Vivicta-SC
 | Name | Required | Default | Description |
 |-|-|-|-|
 | `endpoint` | no | Latest production endpoint | Can be provided via `OCP_ENDPOINT` |
-| `verify_ssl` | no | true | Skip TLS certificate verification |
+| `verify_ssl` | no | true | Verify TLS certificates |
 
 ```hcl
 terraform {

@@ -53,7 +53,7 @@ func (p *ocpProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Description: "OCP GraphQL endpoint. Can be loaded from env `OCP_ENDPOINT`." +
 					" Defaults to latest production endpoint (https://ocp.service.tietoevry.com/v2/graphql)",
 			},
-			"verify_ssl": schema.BoolAttribute{Optional: true, Description: "Skip TLS certificate verification. Defaults to true"},
+			"verify_ssl": schema.BoolAttribute{Optional: true, Description: "Verify TLS certificates. Defaults to true."},
 			"debug": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Enables additional OCP GraphQL usage data (warning, deprecation) - subject to permissions. Default to false",
@@ -87,8 +87,16 @@ func (p *ocpProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	if !cfg.VerifySsl.IsNull() {
 		verifySsl = cfg.VerifySsl.ValueBool()
 	} else {
-		parsed, err := strconv.ParseBool(os.Getenv("OCP_VERIFY_SSL"))
-		if err != nil {
+		envVal := os.Getenv("OCP_VERIFY_SSL")
+		if envVal != "" {
+			parsed, err := strconv.ParseBool(envVal)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Invalid environment variable value",
+					"Could not parse OCP_VERIFY_SSL as a boolean: "+err.Error(),
+				)
+				return
+			}
 			verifySsl = parsed
 		}
 	}

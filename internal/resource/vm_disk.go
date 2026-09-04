@@ -22,6 +22,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// osDiskKey identifies the VM's OS ("C:") disk within localDiskList; it's
+// excluded from the `disks` attribute and instead surfaced via os_disk_size_gb.
+const osDiskKey int32 = 2000
+
+// defaultAllocationUnitSize mirrors the schema Default below. It's reused when
+// reconstructing a disk that has no matching prior state entry (e.g. on import),
+// since allocation_unit_size has no API equivalent to read back.
+const defaultAllocationUnitSize int32 = 16384
+
 func disksAttribute() schema.ListNestedAttribute {
 	// TODO: Make this into Map with Label key?
 	return schema.ListNestedAttribute{
@@ -39,12 +48,14 @@ func disksAttribute() schema.ListNestedAttribute {
 					Required: true,
 				},
 				"allocation_unit_size": schema.Int32Attribute{
+					Description:   "Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.",
 					Optional:      true,
 					Computed:      true,
-					Default:       int32default.StaticInt32(16384),
+					Default:       int32default.StaticInt32(defaultAllocationUnitSize),
 					PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 				},
 				"win_disk_letter": schema.StringAttribute{
+					Description:   "Not readable via the OCP API; unset on import.",
 					Optional:      true,
 					PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 					Validators:    []validator.String{stringvalidator.LengthAtMost(1)},
@@ -70,6 +81,17 @@ type diskModel struct {
 	WinDiskLetter      types.String `tfsdk:"win_disk_letter"`
 }
 
+// findOSDisk returns the OS disk entry from a VM's localDiskList, or nil if
+// absent.
+func findOSDisk(disks []*client.DiskGQL) *client.DiskGQL {
+	for _, disk := range disks {
+		if disk.Key == osDiskKey {
+			return disk
+		}
+	}
+	return nil
+}
+
 func (disk *diskModel) intoModel(_ context.Context, data *client.DiskGQL) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -92,8 +114,7 @@ func (vm *vmResourceModel) fromDisksGQL(ctx context.Context, data []*client.Disk
 	matched := make(map[int]struct{}, len(current_disks))
 	// TODO: this does not respect the orders now!
 	for _, diskGQL := range data {
-		// TODO: how to deal with C: disk?
-		if diskGQL.Key == 2000 {
+		if diskGQL.Key == osDiskKey {
 			continue
 		}
 
@@ -111,7 +132,14 @@ func (vm *vmResourceModel) fromDisksGQL(ctx context.Context, data []*client.Disk
 			}
 		}
 		if disk == nil {
-			disk = &diskModel{}
+			// No prior state to preserve _wo arguments from (e.g. this is an
+			// import). allocation_unit_size has no API equivalent, so fall back
+			// to the schema default rather than leaving it null - that keeps a
+			// plan matching the common/default config a no-op instead of an
+			// unconditional forced replace. win_disk_letter has no default and
+			// is left unset; a config specifying it post-import will show an
+			// honest, unavoidable diff.
+			disk = &diskModel{AllocationUnitSize: types.Int32Value(defaultAllocationUnitSize)}
 		}
 		diags.Append(disk.intoModel(ctx, diskGQL)...)
 		disks = append(disks, *disk)

@@ -21,6 +21,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// These mirror the schema Defaults below. They're reused when reconstructing a
+// NIC that has no matching prior state entry (e.g. on import), since neither
+// attribute has an API equivalent to read back - both only describe how the NIC
+// was configured at creation time (auto-assigning an IP, using it as the
+// default gateway).
+const (
+	defaultAutoAssignIP        = true
+	defaultUseAsDefaultGateway = false
+)
+
 func nicsAttribute() schema.ListNestedAttribute {
 	// TODO: Make this into Map with Label key?
 	return schema.ListNestedAttribute{
@@ -68,15 +78,17 @@ func nicsAttribute() schema.ListNestedAttribute {
 					PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()},
 				},
 				"auto_assign_ip": schema.BoolAttribute{
+					Description:   "Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.",
 					Optional:      true,
 					Computed:      true,
-					Default:       booldefault.StaticBool(true),
+					Default:       booldefault.StaticBool(defaultAutoAssignIP),
 					PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()},
 				},
 				"use_as_default_gateway": schema.BoolAttribute{
+					Description:   "Not readable via the OCP API. Preserved as-is on refresh; seeded to its default on import.",
 					Optional:      true,
 					Computed:      true,
-					Default:       booldefault.StaticBool(false),
+					Default:       booldefault.StaticBool(defaultUseAsDefaultGateway),
 					PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()},
 				},
 			},
@@ -175,7 +187,15 @@ func (vm *vmResourceModel) fromNICsGQL(ctx context.Context, data []client.NICGQL
 			}
 		}
 		if nic == nil {
-			nic = &nicModel{}
+			// No prior state to preserve _wo arguments from (e.g. this is an
+			// import). Neither field is readable from the API, so fall back to
+			// the schema defaults rather than leaving them null - that keeps a
+			// plan matching the common/default config a no-op instead of an
+			// unconditional forced replace.
+			nic = &nicModel{
+				AutoAssignIp:        types.BoolValue(defaultAutoAssignIP),
+				UseAsDefaultGateway: types.BoolValue(defaultUseAsDefaultGateway),
+			}
 		}
 		diags.Append(nic.intoModel(ctx, &nicGQL, data_ips)...)
 		nics = append(nics, *nic)
