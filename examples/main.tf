@@ -150,5 +150,23 @@ resource "ocp_staas_volume" "main" {
       ip_id = resource.ocp_vm.one.nics[1].ipv4[0].id
     }
   ]
+  size_gb = 26
+}
+
+resource "ocp_staas_volume" "secondary" {
+  project_id                = resource.ocp_project.main.id
+  data_protection_policy_id = data.ocp_data_protection_policy.no_backup.id
+  tier_id                   = data.ocp_tier.bronze.id
+  vserver_id                = data.ocp_vserver.main.id
+  note                      = "terraform-secondary"
+  protocol                  = "NFS"
+  nfs_exports = [
+    {
+      subnet_id = data.ocp_network.staas.primary_subnet_id
+    },
+    {
+      ip_id = resource.ocp_vm.one.nics[1].ipv4[0].id
+    }
+  ]
   size_gb = 25
 }

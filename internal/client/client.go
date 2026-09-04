@@ -692,6 +692,8 @@ fragment StaasVolumeFrag on VolumeNode {
   name
   note
   protocol
+  latestSizeMB
+  nasAutosize { mode }
   project { id }
   dataProtectionPolicy { id }
   tier { id }
@@ -760,6 +762,8 @@ type StaasVolumeGQL struct {
 	Name                 string
 	Note                 string
 	Protocol             string
+	LatestSizeMB         int32
+	NasAutosize          struct{ Mode string }
 	Project              NodeGQL
 	DataProtectionPolicy NodeGQL
 	Tier                 NodeGQL

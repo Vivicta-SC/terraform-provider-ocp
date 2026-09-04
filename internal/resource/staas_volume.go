@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -91,8 +90,7 @@ func (r *staasVolumeResource) Schema(ctx context.Context, _ resource.SchemaReque
 				},
 			},
 			"size_gb": schema.Int32Attribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+				Required: true,
 			},
 			"note": schema.StringAttribute{
 				Optional: true,
@@ -150,6 +148,7 @@ func (s *staasVolumeResourceModel) fromGQL(ctx context.Context, data *client.Sta
 	s.TierID = types.StringValue(data.Tier.ID)
 	s.VserverID = types.StringValue(data.Vserver.ID)
 	s.Protocol = types.StringValue(data.Protocol)
+	s.SizeGB = types.Int32Value(int32(data.LatestSizeMB / 1024))
 	s.Note = types.StringValue(data.Note)
 
 	if len(data.Visibility) <= 0 {
@@ -233,6 +232,9 @@ func (r *staasVolumeResource) Create(ctx context.Context, req resource.CreateReq
 		"sizeGB": data.SizeGB.ValueInt32(),
 		"note":   data.Note.ValueString(),
 	}
+	if data.Protocol.ValueString() == "NFS" {
+		input["autosize"] = map[string]interface{}{"mode": "OFF"}
+	}
 
 	var res struct {
 		TaskExecution struct{ ID string }
@@ -287,6 +289,14 @@ func (r *staasVolumeResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	if res.Data.NasAutosize.Mode != "OFF" && res.Data.NasAutosize.Mode != "" {
+		resp.Diagnostics.AddWarning(
+			"Volume has autosize enabled!",
+			"Volume was created with autosize enabled. Disable it manually (mutation volumeResizeNas), "+
+				" or increase its size, which will set autosize to OFF.",
+		)
+	}
+
 	resp.Diagnostics.Append(data.fromGQL(ctx, &res.Data)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -316,8 +326,10 @@ func (r *staasVolumeResource) Update(ctx context.Context, req resource.UpdateReq
 		var op string
 		if state.Protocol.ValueString() == "ISCSI" {
 			op = "resizeISCSI"
+			input["autosize"] = map[string]interface{}{"isEnabled": false}
 		} else {
 			op = "resizeNAS"
+			input["autosize"] = map[string]interface{}{"mode": "OFF"}
 		}
 
 		var res client.NodeGQL
